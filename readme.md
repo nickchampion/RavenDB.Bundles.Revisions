@@ -40,7 +40,13 @@ To retireve a specific revision of a document use the LoadRevision extension met
 <pre>
 using(var session = store.OpenSession)
 {
-    var doc = session.LoadRevision<MyDocument>("TheDocId", 2);
+    var doc = session.LoadRevision<MyDocument>("key", 2);
 }
 </pre>
+
+To delete a specific revision of a document:
+
+<pre>
+_documentStore.DatabaseCommands.DeleteRevision("key", 2, null);
+<ptr>
 
