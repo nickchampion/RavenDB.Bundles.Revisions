@@ -9,7 +9,7 @@
 		<language>en-US</language>
 		<licenseUrl>http://www.opensource.org/licenses/MIT</licenseUrl>
 		<projectUrl>https://github.com/damianh/RavenDB.Bundles.Revisions</projectUrl>
-		<requireLicenseAcceptance>true</requireLicenseAcceptance>
+		<requireLicenseAcceptance>false</requireLicenseAcceptance>
 		<tags>nosql ravendb raven document database client bundles</tags>
 		<dependencies>
 			<dependency id="RavenDB.Database" version=""/>
