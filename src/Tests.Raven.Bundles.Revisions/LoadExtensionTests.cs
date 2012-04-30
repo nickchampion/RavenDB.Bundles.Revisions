@@ -1,6 +1,6 @@
 ﻿#region CopyrightAndLicence
 // --------------------------------------------------------------------------------------------------------------------
-// <Copyright company="Damian Hickey" file="IDocumentSessionExtensionsTests.cs">
+// <Copyright company="Damian Hickey" file="LoadExtensionTests.cs">
 // Copyright © 2012 Damian Hickey
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
@@ -26,10 +26,9 @@ namespace Tests.Raven.Bundles.Revisions
 	using Moq;
 	using Xunit;
 	using global::Raven.Client;
-	using global::Raven.Client.Connection;
 	using global::Raven.Client.Revisions;
 
-	public class IDocumentSessionExtensionsTests
+	public class LoadExtensionTests
 	{
 		[Fact]
 		public void When_session_is_null_Then_should_throw()
@@ -45,25 +44,6 @@ namespace Tests.Raven.Bundles.Revisions
 			mockSession.Setup(m => m.Load<RevisionedDocument>("key/revision/1"));
 			mockSession.Object.LoadRevision<RevisionedDocument>("key", 1);
 			mockSession.VerifyAll();
-		}
-	}
-
-	public class IDatabaseCommandsExtensionsTests
-	{
-		[Fact]
-		public void When_session_is_null_Then_should_throw()
-		{
-			IDatabaseCommands databaseCommands = null;
-			Assert.Throws<InvalidOperationException>(() => databaseCommands.DeleteRevision("key", 1, null));
-		}
-
-		[Fact]
-		public void When_Delete_Then_should_call_Delete_with_revision_key()
-		{
-			var mockDatabaseCommands = new Mock<IDatabaseCommands>();
-			mockDatabaseCommands.Setup(m => m.Delete("key/revision/1", null));
-			mockDatabaseCommands.Object.DeleteRevision("key", 1, null);
-			mockDatabaseCommands.VerifyAll();
 		}
 	}
 }

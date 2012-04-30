@@ -124,6 +124,7 @@
     <Compile Include="Guard.cs" />
     <Compile Include="IDatabaseCommandsExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RevisionDocIdGenerator.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

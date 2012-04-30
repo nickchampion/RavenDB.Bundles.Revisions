@@ -1,7 +1,7 @@
-﻿#region CopyrightAndLicence
+#region CopyrightAndLicence
 // --------------------------------------------------------------------------------------------------------------------
-// <Copyright company="Damian Hickey" file="IDocumentSessionExtensions.cs">
-// 	Copyright © 2012 Damian Hickey
+// <Copyright company="Damian Hickey" file="LoadExtensionTests.cs">
+// Copyright � 2012 Damian Hickey
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 // documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
@@ -20,20 +20,30 @@
 //  --------------------------------------------------------------------------------------------------------------------
 #endregion
 
-namespace Raven.Client.Revisions
+namespace Tests.Raven.Bundles.Revisions
 {
 	using System;
-	using System.Diagnostics.Contracts;
-	using Client;
+	using Moq;
+	using Xunit;
+	using global::Raven.Client.Connection;
+	using global::Raven.Client.Revisions;
 
-	public static class IDocumentSessionExtensions
+	public class DeleteRevisionExtensionTests
 	{
-		public static T LoadRevision<T>(this IDocumentSession documentSession, string id, int revision)
+		[Fact]
+		public void When_session_is_null_Then_should_throw()
 		{
-			Contract.Requires<ArgumentNullException>(!string.IsNullOrEmpty(id));
-			Guard.Against(documentSession == null, () => new InvalidOperationException("documentSession is null"));
-			string revisionDocId = RevisionDocIdGenerator.GetId(id, revision);
-			return documentSession.Load<T>(revisionDocId);
+			IDatabaseCommands databaseCommands = null;
+			Assert.Throws<InvalidOperationException>(() => databaseCommands.DeleteRevision("key", 1, null));
+		}
+
+		[Fact]
+		public void When_Delete_Then_should_call_Delete_with_revision_key()
+		{
+			var mockDatabaseCommands = new Mock<IDatabaseCommands>();
+			mockDatabaseCommands.Setup(m => m.Delete("key/revision/1", null));
+			mockDatabaseCommands.Object.DeleteRevision("key", 1, null);
+			mockDatabaseCommands.VerifyAll();
 		}
 	}
 }

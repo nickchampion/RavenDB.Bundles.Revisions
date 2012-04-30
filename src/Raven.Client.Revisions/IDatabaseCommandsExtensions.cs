@@ -28,12 +28,12 @@ namespace Raven.Client.Revisions
 
 	public static class IDatabaseCommandsExtensions
 	{
-		public static void DeleteRevision(this IDatabaseCommands databaseCommands, string key, int version, Guid? etag)
+		public static void DeleteRevision(this IDatabaseCommands databaseCommands, string id, int revision, Guid? etag)
 		{
-			Contract.Requires<ArgumentNullException>(!string.IsNullOrEmpty(key));
+			Contract.Requires<ArgumentNullException>(!string.IsNullOrEmpty(id));
 			Guard.Against(databaseCommands == null, () => new InvalidOperationException("session is null"));
-			string revisionKey = key + "/revision/" + version;
-			databaseCommands.Delete(revisionKey, etag);
+			string revisionDocId = RevisionDocIdGenerator.GetId(id, revision);
+			databaseCommands.Delete(revisionDocId, etag);
 		}
 	}
 }

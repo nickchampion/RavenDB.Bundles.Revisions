@@ -22,18 +22,11 @@
 
 namespace Raven.Client.Revisions
 {
-	using System;
-	using System.Diagnostics.Contracts;
-	using Client;
-
-	public static class IDocumentSessionExtensions
+	public static class RevisionDocIdGenerator
 	{
-		public static T LoadRevision<T>(this IDocumentSession documentSession, string id, int revision)
+		public static string GetId(string id, int revision)
 		{
-			Contract.Requires<ArgumentNullException>(!string.IsNullOrEmpty(id));
-			Guard.Against(documentSession == null, () => new InvalidOperationException("documentSession is null"));
-			string revisionDocId = RevisionDocIdGenerator.GetId(id, revision);
-			return documentSession.Load<T>(revisionDocId);
+			return id + "/revision/" + revision;
 		}
 	}
 }
