@@ -20,6 +20,8 @@
 //  --------------------------------------------------------------------------------------------------------------------
 #endregion
 
+using Raven.Abstractions.Exceptions;
+
 namespace Tests.Raven.Bundles.Revisions
 {
 	using System;
@@ -28,7 +30,8 @@ namespace Tests.Raven.Bundles.Revisions
 	using global::Raven.Bundles.Revisions;
 	using global::Raven.Client.Embedded;
 	using global::Raven.Client.Revisions;
-	using global::Raven.Database.Exceptions;
+    using global::Raven.Database;
+    using global::Raven.Database.Server;
 
 	public class RevisionDocumentDatabaseTests : IDisposable
 	{

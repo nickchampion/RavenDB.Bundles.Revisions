@@ -22,40 +22,68 @@
 
 namespace Raven.Bundles.Revisions
 {
-	using System.Diagnostics.Contracts;
-	using Abstractions.Data;
-	using Database.Plugins;
-	using Json.Linq;
+    using System.Diagnostics.Contracts;
+    using Abstractions.Data;
+    using Database.Plugins;
+    using Json.Linq;
 
-	public class RevisionDocumentPutTrigger : AbstractPutTrigger
-	{
-		internal const string RevisionSegment = "/revision/";
+    public class RevisionDocumentPutTrigger : AbstractPutTrigger
+    {
+        internal const string RevisionSegment = "/revision/";
+        internal const string RavenDocumentRevision = "Raven-Document-Revision";
+        internal const string RavenDocumentRevisionStatus = "Raven-Document-Revision-Status";
+        internal const string RavenDocumentEnsureUniqueConstraints = "Ensure-Unique-Constraints";
 
-		public override VetoResult AllowPut(string key,
-		                                    RavenJObject document,
-		                                    RavenJObject metadata,
-		                                    TransactionInformation transactionInformation)
-		{
-			return key.Contains(RevisionSegment) ? VetoResult.Deny("Cannot modify a revision document") : VetoResult.Allowed;
-		}
+        public override VetoResult AllowPut(string key,
+                                            RavenJObject document,
+                                            RavenJObject metadata,
+                                            TransactionInformation transactionInformation)
+        {
+            return VetoResult.Allowed;
+        }
 
-		public override void OnPut(string key,
-		                           RavenJObject document,
-		                           RavenJObject metadata,
-		                           TransactionInformation transactionInformation)
-		{
-			Contract.Assume(!string.IsNullOrWhiteSpace(key));
-			RavenJToken versionToken;
-			if (!document.TryGetValue("Revision", out versionToken) || key.Contains(RevisionSegment))
-			{
-				return;
-			}
-			using (Database.DisableAllTriggersForCurrentThread())
-			{
-				var revisionCopy = new RavenJObject(document);
-				string revisionkey = key + RevisionSegment + versionToken.Value<int>();
-				Database.Put(revisionkey, null, revisionCopy, metadata, transactionInformation);
-			}
-		}
-	}
+        public override void OnPut(string key,
+                                   RavenJObject document,
+                                   RavenJObject metadata,
+                                   TransactionInformation transactionInformation)
+        {
+            Contract.Assume(!string.IsNullOrWhiteSpace(key));
+
+            RavenJToken versionToken;
+            if (!document.TryGetValue("Revision", out versionToken) || key.Contains(RevisionSegment))
+                return;
+
+            var newRevision = versionToken.Value<int>();
+            var currentRevision = metadata.ContainsKey(RavenDocumentRevision) ? metadata[RavenDocumentRevision].Value<int>() : 0;
+
+            metadata[RavenDocumentRevisionStatus] = RavenJToken.FromObject("Current");
+
+            //if we have a higher revision number than the existing then put a new revision
+            if (newRevision > currentRevision)
+            {
+                metadata[RavenDocumentRevision] = RavenJToken.FromObject(versionToken.Value<int>());
+                metadata.__ExternalState[RavenDocumentRevision] = metadata[RavenDocumentRevision];
+            }
+        }
+
+        public override void AfterPut(string key, RavenJObject document, RavenJObject metadata, Etag etag, TransactionInformation transactionInformation)
+        {
+            if (!metadata.__ExternalState.ContainsKey(RavenDocumentRevision))
+                return;
+
+            using (Database.DisableAllTriggersForCurrentThread())
+            {
+                var revisionMetadata = new RavenJObject(metadata);
+                revisionMetadata[RavenDocumentRevisionStatus] = RavenJToken.FromObject("Historical");
+                revisionMetadata.Remove(RavenDocumentRevision);
+
+                if (revisionMetadata.ContainsKey(RavenDocumentEnsureUniqueConstraints))
+                    revisionMetadata.Remove(RavenDocumentEnsureUniqueConstraints);
+
+                var revisionCopy = new RavenJObject(document);
+                var revisionkey = key + RevisionSegment + metadata.__ExternalState[RavenDocumentRevision];
+                Database.Put(revisionkey, null, revisionCopy, revisionMetadata, transactionInformation);
+            }
+        }
+    }
 }
