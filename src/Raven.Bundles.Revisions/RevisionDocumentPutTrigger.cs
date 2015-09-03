@@ -82,7 +82,7 @@ namespace Raven.Bundles.Revisions
 
                 var revisionCopy = new RavenJObject(document);
                 var revisionkey = key + RevisionSegment + metadata.__ExternalState[RavenDocumentRevision];
-                Database.Put(revisionkey, null, revisionCopy, revisionMetadata, transactionInformation);
+                Database.Documents.Put(revisionkey, null, revisionCopy, revisionMetadata, transactionInformation);
             }
         }
     }
